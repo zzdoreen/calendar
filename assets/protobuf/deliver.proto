@@ -1,0 +1,79 @@
+syntax = "proto3";
+package deliver;
+
+// 1.认证请求，客户端连接服务器后，立即发送
+message Authentication {
+    string account = 1;//账号
+    string password = 2;//密码
+}
+
+// 2.认证结果
+message Consequence {
+    bool verdict = 1; //true 成功 false 失败
+    string message = 2; //提示
+}
+
+// 3.心跳，客户端主动向服务器发送，30秒钟一次。服务器收到后立即原样回复客户端
+message Heartbeat {
+}
+
+//4.预警告警信息推送
+message Warning {
+  string eventId = 1; //事件Id
+    int32 eventType = 2; //事件类型 1-火情 2-滑坡 3-泥石流 4-沉降 5-烈度速报 6-山洪 7-积水
+    int32 warnType = 3; //预警类型 1-预报预警 2-监测预警 3-监测报警
+    int32 sourceType = 4; //数据源类型 1-仪器 2-卫星 3-视频 4-气象
+    int32 updateType = 5; //更新类型： 烈度速报(1-自动报 2-更新报 3-修正报) 其他(1-首报 2-更新报 3-解除报)
+    int32 level = 6; //等级 红-5、橙-4、黄-3、蓝-2、低风险-1
+    float longitude = 7; //经度
+    float latitude = 8; //纬度
+    string location = 9; //位置
+    int64 createdAt = 10; //提示时间戳(s)
+    int64 startAt = 11; //发震时间戳(s)
+    float magnitude = 12; //预警震级
+    int32 waterState = 13; //是否有积水 0-有积水深度(depth>=0)，1-无积水，2-有积水
+    float depth = 14; //积水深度
+    int32 areaCode = 15; //行政区域编码
+    string province = 16; //省
+    string city = 17; //市
+    string county = 18; //县
+    int32 hour = 19; //预警时段: 0或2时为实时预警、其他(6,12,24,48,72)为临时预警
+}
+
+// 5.服务端通知前端来拉取降雨信息
+message Rain {
+    int32 type = 1;  // type-1，实时降雨数据已准备好；type-2，累计降水数据已准备好(包括未来累计降水、降水等级、暴雨预警)
+}
+
+// 6.控制命令
+message Control {
+    int32 type = 1;//控制类型  1:连接控制命令
+    int32 operation = 2;//操作类型 1:下线 2:重新登录 3:刷新首页 4:项目配置更新
+}
+
+// 7.http协议中有关降水(实时降水、累计降水量、降水等级、暴雨预警)使用的数据结构
+message Rainfall {
+    int64 timestamp = 1; //时间戳
+    repeated float lngs = 2;//经度范围
+    repeated float lats = 3;//纬度范围
+    int32 lng_size = 4;//经度数量
+    int32 lat_size = 5;//纬度数量
+    repeated int32 level = 6; //等级
+}
+
+//7.地震预警 
+message QuakeWarning{
+    int64 startAt=1;
+    string epicenter=2; //震源
+    float magnitude=3; //震级
+    float intensity=4; //烈度
+    int32 countdown=5; //倒数时间  
+    float distance=6; //距离
+    float longitude=7; //经度
+    float latitude=8; //纬度
+    string eventId=9; //事件Id
+    int64 updateAt=10;//更新时刻
+    int32 updates=11;//此次地震第几次报
+    float depth=12; //深度
+    int32 level=13; //地震预警等级
+}
