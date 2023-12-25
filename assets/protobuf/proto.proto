@@ -1,0 +1,19 @@
+syntax = "proto3";
+package mqtt;
+
+//1. 心跳命令,客户端主动向服务器上传，服务器收到后立即原样回复客户端。建议间隔1分钟。
+message Heartbeat {
+}
+
+//2 通用命令请求
+message Order {
+    string uuid = 1;//请求id
+    string service = 2;//约定的service名称(每个可控设备抽象为一个service)
+    string data = 3;//命令数据, jsonRpc 调用
+}
+
+//3 通用命令响应
+message OrderResp {
+    string uuid = 1;//请求id
+    string data = 4;//jsonRpc响应
+}

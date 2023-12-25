@@ -7,7 +7,7 @@
 /* eslint-disable no-use-before-define */
 // @ts-ignore
 import alder32 from 'adler-32';
-import { message, notification } from 'antd';
+import { message } from 'antd';
 import { getProto } from '.';
 
 export enum Disaster { // 灾害类型
@@ -19,8 +19,6 @@ export enum Disaster { // 灾害类型
     FLASHFLOOD,
     WATERACCUM
 }
-type DisasterEntity = any;
-type Quake = any;
 
 const { setTimeout, setInterval, clearInterval, clearTimeout } = window;
 const InitialConnectState = {
@@ -28,12 +26,10 @@ const InitialConnectState = {
     count: 0, // 重连次数
     state: 0, // 断连类型，0正常，1重连中，2网络断开
 };
-const WS_URL = 'ws://8.140.175.191:5016/v1/ws';
+const WS_URL = 'ws://127.0.0.1:8086/masterpiece';
+// const WS_URL = 'ws://8.140.175.191:5016/v1/ws';
 interface Actions {
     pageChange: () => void;
-    updateOne: (disaster: DisasterEntity) => void;
-    processQuake: (quake: Quake) => void;
-    updateRain: (type: 1 | 2) => void;
     syncData: () => void;
     refresh: () => void;
 }
@@ -44,143 +40,74 @@ interface Actions {
  */
 export async function WebSocketManager(actions: Actions) {
     const {
-        Authentication,
-        Consequence,
+        Order,
+        OrderResp,
         Heartbeat,
-        Warning,
-        Rain,
-        Control,
-        QuakeWarning,
     } = await getProto();
     let connectState = InitialConnectState;
     let NO_RECONNECT = false;
     let timer: number;
     let ws: WebSocket;
     function startWS() {
-        ws = new WebSocket(WS_URL);
+        ws = new WebSocket(
+            WS_URL,
+            // 'private'
+        );
         ws.binaryType = 'arraybuffer';
-        ws.onopen = () => {
-            console.log(`websocket连接启动${WS_URL}`);
-            const account = { account: 'admin', password: '123456aA' }
-            // getLocalStorage('account') as Record<
-            //     'account' | 'password',
-            //     string
-            // >;
-            const data = Authentication.encode(
-                Authentication.create({
-                    account: account.account,
-                    password: account.password,
-                }),
-            ).finish();
-            ws.send(getFormattedBinaryFromBuffer('deliver.Authentication', data));
+        ws.onopen = (e) => {
+            console.log(`websocket连接启动${WS_URL}`, e);
+
+            const account = {
+                uuid: 'BD31E74A-8DD3-11EA-BCDA-1889A8506500',
+                service: 'mpdeamon',
+                data: JSON.stringify({
+                    // payload: {
+                    method: "authorized",
+                    id: "104567",
+                    params: ["1", "1.0.0", "UI", 0],
+                    jsonrpc: "2.0",
+                    // }
+                })
+            }
+            const data = Order.encode(Order.create({ ...account })).finish();
+            /* 
+            TODO
+            getFormattedBinaryFromBuffer 要改成别的方法
+            */
+            ws.send(getFormattedBinaryFromBuffer('mqtt.Order', data));
+            console.log('send---')
         };
         ws.onmessage = ({ data }) => {
+            console.log('onmessage', data)
             const { key, content } = getBufferFromFormattedBinary(data);
             if (content === undefined) return;
             switch (key) {
-                case 'deliver.Consequence':
-                    const { verdict, message: msg } = Consequence.toObject(
-                        Consequence.decode(new Uint8Array(content)),
-                    );
-                    if (verdict) {
-                        timer = setInterval(() => {
-                            ws.send(
-                                getFormattedBinaryFromBuffer(
-                                    'deliver.Heartbeat',
-                                    Heartbeat.encode(Heartbeat.create({})).finish(),
-                                ),
-                            );
-                        }, 30000);
-                        connectState.state !== 0 && message.destroy();
-                        connectState = InitialConnectState;
-                    } else {
-                        notification.error({
-                            duration: null,
-                            message: '连接失败',
-                            description: msg || 'websocket验证失败，请重新登录！',
-                        });
-                        // actions.logout();
+                case 'mqtt.OrderResp':
+                    const { uuid, data: { method, params } } = OrderResp.toObject(OrderResp.decode(new Uint8Array(content)))
+
+                    console.log('orderResp', data, method, params, uuid)
+
+                    switch (method) {
+                        case 'reset':
+                            console.log('reset', params); break;
+                        default: console.log('.................');
                     }
+                    // if (uuid) {
+                    //     timer = setInterval(() => {
+                    //         ws.send(getFormattedBinaryFromBuffer('mqtt.Heartbeat', Heartbeat.encode(Heartbeat.create({})).finish()))
+                    //     }, 60000)
+                    //     connectState.state !== 0 && message.destroy()
+                    //     connectState = InitialConnectState
+                    // }
                     break;
-                case 'deliver.Warning':
-                    const d = Warning.toObject(
-                        Warning.decode(new Uint8Array(content)),
-                    ) as DisasterEntity &
-                        DisasterEntity['intensity'] &
-                        DisasterEntity['waterAccum'];
-                    console.log('Warning', d);
-                    const {
-                        eventType,
-                        waterState = 0,
-                        depth = 0,
-                        startAt,
-                        magnitude,
-                        ...rest
-                    } = d;
-                    let disaster: DisasterEntity;
-                    if (eventType === Disaster.INTENSITY) {
-                        disaster = {
-                            ...rest,
-                            eventType,
-                            intensity: { startAt, magnitude },
-                        };
-                    } else if (eventType === Disaster.WATERACCUM) {
-                        disaster = {
-                            ...rest,
-                            eventType,
-                            waterAccum: { waterState, depth },
-                        };
-                    } else disaster = { ...rest, eventType };
-                    actions.updateOne(disaster);
-                    break;
-                case 'deliver.QuakeWarning':
-                    // eslint-disable-next-line eqeqeq
-                    if (window.location.pathname == '/login') {
-                        return;
-                    }
-                    const quake = QuakeWarning.toObject(
-                        QuakeWarning.decode(new Uint8Array(content)),
-                        { defaults: true },
-                    ) as Quake;
-                    console.log('quake', quake);
-                    quake.intensity = Number(quake.intensity.toFixed(1));
-                    actions.processQuake(quake);
-                    break;
-                case 'deliver.Rain':
-                    const rain = Rain.toObject(Rain.decode(new Uint8Array(content))) as {
-                        type: 1 | 2;
-                    };
-                    actions.updateRain(rain.type);
-                    break;
-                case 'deliver.Control':
-                    // 操作类型 1:下线 2:重新登录 3:刷新首页 4:项目配置更新
-                    const { type, operation } = Control.toObject(
-                        Control.decode(new Uint8Array(content)),
-                    );
-                    console.log(type, operation);
-                    if (type === 1) {
-                        switch (operation) {
-                            case 1:
-                                NO_RECONNECT = true;
-                                ws.close();
-                                break;
-                            // case 2:
-                            //     actions.logout();
-                            //     break;
-                            case 3:
-                                actions.syncData();
-                                break;
-                            case 4:
-                                actions.refresh();
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    break;
-                case 'deliver.Heartbeat':
+                case 'mqtt.Heartbeat':
                     actions.pageChange()
-                    // console.log('deliver.Heartbeat')
+                    timer = setInterval(() => {
+                        ws.send(getFormattedBinaryFromBuffer('mqtt.Heartbeat', Heartbeat.encode(Heartbeat.create({})).finish()))
+                    }, 60000)
+                    connectState.state !== 0 && message.destroy()
+                    connectState = InitialConnectState
+                    console.log('Heartbeat')
                     break;
                 default:
                     console.log('websocket收到未知类型消息');
@@ -190,7 +117,8 @@ export async function WebSocketManager(actions: Actions) {
         ws.onclose = () => {
             clearInterval(timer);
             console.log('websocket连接已关闭');
-            reconnect();
+            startWS()
+            // reconnect();
         };
         ws.onerror = () => {
             console.log('websocket连接发生错误');
@@ -203,7 +131,7 @@ export async function WebSocketManager(actions: Actions) {
     }
 
     /**
-     * 重连机制：间隔2^n秒重连,最大30秒;根据网络状态区分显示提示
+     * 重连机制：间隔2^n秒重连,最大60秒;根据网络状态区分显示提示
      */
     function reconnect() {
         if (NO_RECONNECT) return;
@@ -226,7 +154,7 @@ export async function WebSocketManager(actions: Actions) {
                 console.log(`正在尝试第${connectState.count}次重连...`);
                 startWS();
             },
-            Math.min(30, 2 ** count++) * 1000,
+            Math.min(60, 2 ** count++) * 1000,
         );
         connectState = { timer, count, state };
     }
@@ -242,7 +170,7 @@ export async function WebSocketManager(actions: Actions) {
 
 /**
  *
- * @param key 字段名, 如 deliver.Heartbeat
+ * @param key 字段名, 如 Heartbeat
  * @param data 原始二进制数据
  * @returns 格式化校验的Buffer
  */

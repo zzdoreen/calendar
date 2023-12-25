@@ -193,7 +193,7 @@ const configuration: webpack.Configuration = {
       verbose: true,
     },
     proxy: {
-      '/v1': {
+      /* '/v1': {
         // 要代理的地址
         target: 'https://test191.chinaeew.cn:3112/',
         // 配置了这个可以从 http 代理到 https
@@ -205,7 +205,12 @@ const configuration: webpack.Configuration = {
         target: 'http://localhost:3000/',
         changeOrigin: true,
         pathRewrite: { '^': '' }
-      },
+      }, */
+      '/': {
+        target: 'http://localhost:8086/',
+        changeOrigin: true,
+        pathRewrite: { '^': '' }
+      }
     },
     setupMiddlewares(middlewares) {
       console.log('Starting preload.js builder...');

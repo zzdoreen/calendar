@@ -13,7 +13,7 @@ export default function HomeContent() {
             case 1: return <WarningPage />;
             case 2: return <HistoryListPage />;
             case 3: return <DetailPage />;
-            default: return <DetailPage />
+            default: return <HistoryListPage />
         }
     }, [pageState])
 

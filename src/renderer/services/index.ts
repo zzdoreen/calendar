@@ -1,6 +1,6 @@
 import protobuf from 'protobufjs';
 // @ts-ignore
-import file from '../../../assets/protobuf/deliver.proto'
+import file from '../../../assets/protobuf/proto.proto'
 import http from './http';
 
 /**
@@ -14,16 +14,15 @@ export async function getProto() {
     if (proto) return proto
 
     return protobuf.load(file).then(() => {
-        const { deliver: {
-            Authentication,
-            Consequence,
-            Heartbeat,
-            Warning,
-            Control,
-            Rain,
-            Rainfall,
-            QuakeWarning
-        } } = file || { deliver: {} }
+        const {
+
+            mqtt: {
+                Order,
+                OrderResp,
+                Heartbeat
+            }
+
+        } = file || {}
         // const Authentication = root.lookupType("deliver.Authentication")
         // const Consequence = root.lookupType("deliver.Consequence")
         // const Heartbeat = root.lookupType("deliver.Heartbeat")
@@ -31,18 +30,13 @@ export async function getProto() {
         // const Rain = root.lookupType("deliver.Rain")
         // const Control = root.lookupType("deliver.Control")
         // const Rainfall = root.lookupType("deliver.Rainfall")
-        // const QuakeWarning = root.lookupType("deliver.QuakeWarning")
+        // const CmdResp = root.lookupType("com.huania.alien.mqtt.CmdResp")
 
         // eslint-disable-next-line no-return-assign
         return proto = {
-            Authentication,
-            Consequence,
+            Order,
+            OrderResp,
             Heartbeat,
-            Warning,
-            Control,
-            Rain,
-            Rainfall,
-            QuakeWarning
         }
     })
 }
