@@ -75,13 +75,15 @@ export async function WebSocketManager(actions: Actions) {
             console.log(`websocket连接启动${WS_URL}`, e);
 
             const account = {
+                // cmd: wmic csproduct get uuid
+                // linux: sudo blkid
                 uuid: 'BD31E74A-8DD3-11EA-BCDA-1889A8506500',
                 service: 'mpdeamon',
                 data: JSON.stringify({
                     method: "authorized",
                     id: "104567",
                     params: ["1", "1.0.0", "UI", 0],
-                    jsonrpc: "2.0",
+                    // jsonrpc: "2.0",
                 })
             }
             const data = Order.encode(Order.create({ ...account })).finish();
