@@ -47,15 +47,15 @@
                 top: 0;
                 z-index: -1;
                 background: radial-gradient(circle at center,
-                        #FF7500 0, #FF7500 10%,
+                        transparent 0, transparent 10%,
                         #FF9348 11%, #FF9348 20%,
-                        #FF7500 21%, #FF7500 30%,
+                        transparent 21%, transparent 30%,
                         #FF8528 31%, #FF8528 40%,
-                        #FF7500 41%, #FF7500 50%,
+                        transparent 41%, transparent 50%,
                         #FE7A0D 51%, #FE7A0D 60%,
-                        #FF7500 61%, #FF7500 70%,
+                        transparent 61%, transparent 70%,
                         #FF7707 71%, #FF7707 80%,
-                        #FF7500 81%, #FF7500 100%);
+                        transparent 81%, transparent 100%);
             }
         }
 
@@ -64,7 +64,17 @@
             justify-content: space-around;
             align-items: center;
             height: 40%;
-            background-color: #FE7E02;
+            position: relative;
+
+            &::after {
+                content: '';
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: rgba($color: #fff, $alpha: .06);
+                left: 0;
+                top: 0
+            }
 
             .item {
                 height: 70%;

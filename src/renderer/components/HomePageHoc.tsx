@@ -6,17 +6,16 @@ import HistoryListPage from "./HistoryList"
 import DetailPage from "./Detail"
 
 export default function HomeContent() {
-    const { pageState } = useWebsocket()
+    const { pageState, pageSetting } = useWebsocket()
 
     const content = useMemo(() => {
         switch (pageState) {
-            case 1: return <WarningPage />;
-            case 2: return <HistoryListPage />;
-            case 3: return <DetailPage />;
-            default: return <HistoryListPage />
+            case 'warning': return <WarningPage setting={pageSetting} />;
+            case 'history': return <HistoryListPage setting={pageSetting} />;
+            case 'alert': return <DetailPage setting={pageSetting} />;
+            default: return <HistoryListPage setting={pageSetting} />
         }
-    }, [pageState])
+    }, [pageState, pageSetting])
 
-    // return <Card className="content-container"><WarningPage /></Card>
     return <Card className="content-container">{content}</Card>
 }

@@ -15,22 +15,10 @@ export async function getProto() {
 
     return protobuf.load(file).then(() => {
         const {
-
-            mqtt: {
-                Order,
-                OrderResp,
-                Heartbeat
-            }
-
+            Order,
+            OrderResp,
+            Heartbeat
         } = file || {}
-        // const Authentication = root.lookupType("deliver.Authentication")
-        // const Consequence = root.lookupType("deliver.Consequence")
-        // const Heartbeat = root.lookupType("deliver.Heartbeat")
-        // const Warning = root.lookupType("deliver.Warning")
-        // const Rain = root.lookupType("deliver.Rain")
-        // const Control = root.lookupType("deliver.Control")
-        // const Rainfall = root.lookupType("deliver.Rainfall")
-        // const CmdResp = root.lookupType("com.huania.alien.mqtt.CmdResp")
 
         // eslint-disable-next-line no-return-assign
         return proto = {

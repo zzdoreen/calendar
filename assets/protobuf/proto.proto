@@ -1,5 +1,4 @@
 syntax = "proto3";
-package mqtt;
 
 //1. 心跳命令,客户端主动向服务器上传，服务器收到后立即原样回复客户端。建议间隔1分钟。
 message Heartbeat {

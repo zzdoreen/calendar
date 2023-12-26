@@ -23,6 +23,7 @@ class AppUpdater {
   }
 }
 const isProduction = process.env.NODE_ENV === 'production'
+process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -76,7 +77,7 @@ const createWindow = async () => {
     height: 728,
     icon: getAssetPath('icon.png'),
     fullscreen: isProduction,
-    title: '成都高新减灾研究所',
+    title: '-',
     alwaysOnTop: true,
     autoHideMenuBar: isProduction,
     webPreferences: {

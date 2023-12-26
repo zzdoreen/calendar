@@ -7,12 +7,12 @@
 /* eslint-disable import/no-dynamic-require */
 import { useEffect, useState } from "react";
 
-export default function WarningPage() {
+export default function WarningPage({ setting }: any) {
+    const { setColor, setText } = setting || {}
     const [countdown, setCountdown] = useState<number>(10)
-
     useEffect(() => {
         let timer: NodeJS.Timeout | null = null
-        if (countdown === 20) playVoice(require('../../../assets/audio/notifys/dingdong.mp3'))
+        if (countdown === 20) playVoice(require(`../../../assets/audio/notifys/dingdong.mp3`))
         if (countdown)
             timer = setInterval(() => {
                 const count = countdown - 1
@@ -25,8 +25,9 @@ export default function WarningPage() {
         }
     }, [countdown])
 
-    return <div className="countdown-container">
+    return <div className="countdown-container" style={{ backgroundColor: setColor }}>
         <h1>正在预警页面</h1>
+        <p>{setText}</p>
         <div className="count">
             {countdown}
         </div>
@@ -41,7 +42,7 @@ const playVoice = (url: string) => {
 }
 
 const playVoiceTasks = (countdown: number, intensity: number) => {
-    const wuwuUrl = require('../../../assets/audio/notifys/wu.mp3')
+    const wuwuUrl = require(`../../../assets/audio/notifys/wu.mp3`)
     if (countdown === 0) {
         let count = 10;
         let timer: string | number | NodeJS.Timeout | null | undefined = null
@@ -49,7 +50,7 @@ const playVoiceTasks = (countdown: number, intensity: number) => {
             if (--count >= 0) playVoice(wuwuUrl)
             else {
                 let txt_speech = new SpeechSynthesisUtterance()
-                txt_speech = playTTS('地震预警广播终端.....')
+                txt_speech = playTTS('啊啊啊啊啊啊啊啊.....')
                 txt_speech.onend = (e) => {
                     console.log('end', e)
                     txt_speech.onend = null

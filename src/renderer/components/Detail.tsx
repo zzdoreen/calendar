@@ -1,5 +1,6 @@
-export default function DetailPage() {
-    return <div className="detail-container">
+export default function DetailPage({ setting }: any) {
+    const { setColor } = setting ?? {}
+    return <div className="detail-container" style={{ backgroundColor: setColor }}>
         <div className="intensity-content">
             <div className="title">地震横波已到达</div>
             <div className="location">四川省成都市高新区</div>

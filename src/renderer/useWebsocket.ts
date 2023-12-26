@@ -3,52 +3,34 @@
 import { useEffect, useState } from "react";
 import { WebSocketManager } from "./services/websocket";
 
+export type PageType = 'warning' | 'history' | 'alert'
+
 export default function useWebsocket() {
-  const [pageState, setPageState] = useState<number>()
+  const [pageState, setPageState] = useState<PageType>()
+  const [pageSetting, setPageSetting] = useState({})
 
-  const pageChange = () => {
-    const randomInt = getRandomIntInclusive(1, 3); // 生成1到6之间的随机整数
+  const pageChange = (name: PageType = 'history') => setPageState(name)
 
-    console.log('pageChange', randomInt)
-    setPageState(randomInt)
-  }
-  const processQuake = (a: any) => {
-    console.log('processQuake', a)
-  }
-  const updateOne = (a: any) => {
-    console.log('updateOne', a)
-  }
-  const updateRain = (a: any) => {
-    console.log('updateRain', a)
-  }
   const refresh = () => {
-    console.log('refresh')
+    setPageState('history');
+    setPageSetting({})
   }
-  const syncData = () => {
-    console.log('syncData')
-  }
+
+  const syncData = () => console.log('syncData')
+
+  const pageSettingChange = (type: string, value: string) => setPageSetting(v => ({ ...v, [type]: value }))
 
 
   useEffect(() => {
     let cleaner: () => void
     WebSocketManager({
       pageChange,
-      processQuake,
-      updateOne,
-      updateRain,
       refresh,
-      syncData
+      syncData,
+      pageSettingChange
     }).then(cl => cleaner = cl)
     return () => cleaner?.()
   }, []);
 
-  return { pageState }
-}
-
-
-// 生成[min, max]区间内的随机整数
-function getRandomIntInclusive(min: number, max: number) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return { pageState, pageSetting }
 }

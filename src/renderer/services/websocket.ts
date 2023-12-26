@@ -1,3 +1,5 @@
+/* eslint-disable no-bitwise */
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-console */
 /* eslint-disable eqeqeq */
 /* eslint-disable no-case-declarations */
@@ -6,9 +8,9 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-use-before-define */
 // @ts-ignore
-import alder32 from 'adler-32';
 import { message } from 'antd';
 import { getProto } from '.';
+import { PageType } from '../useWebsocket';
 
 export enum Disaster { // 灾害类型
     FIRE = 1,
@@ -29,9 +31,24 @@ const InitialConnectState = {
 const WS_URL = 'ws://127.0.0.1:8086/masterpiece';
 // const WS_URL = 'ws://8.140.175.191:5016/v1/ws';
 interface Actions {
-    pageChange: () => void;
+    pageChange: (name?: PageType) => void;
     syncData: () => void;
     refresh: () => void;
+    pageSettingChange: (type: string, value: string) => void
+}
+
+enum FunType {
+    HEARTBEAT = '1',
+    ORDER = '2',
+    ORDERRESP = '3'
+}
+
+export enum InstructType {
+    RESET = 'reset',
+    SETSCREEN = 'setScreen',
+    SETTEXT = 'setText',
+    SETICON = 'setIcon',
+    SETCOLOR = 'setColor'
 }
 
 /**
@@ -61,52 +78,45 @@ export async function WebSocketManager(actions: Actions) {
                 uuid: 'BD31E74A-8DD3-11EA-BCDA-1889A8506500',
                 service: 'mpdeamon',
                 data: JSON.stringify({
-                    // payload: {
                     method: "authorized",
                     id: "104567",
                     params: ["1", "1.0.0", "UI", 0],
                     jsonrpc: "2.0",
-                    // }
                 })
             }
             const data = Order.encode(Order.create({ ...account })).finish();
-            /* 
-            TODO
-            getFormattedBinaryFromBuffer 要改成别的方法
-            */
-            ws.send(getFormattedBinaryFromBuffer('mqtt.Order', data));
-            console.log('send---')
+            ws.send(getFormattedBinaryFromBuffer(FunType.ORDER, data))
+
+            // console.log('send---', data, getFormattedBinaryFromBuffer(FunType.ORDER, data))
         };
         ws.onmessage = ({ data }) => {
             console.log('onmessage', data)
-            const { key, content } = getBufferFromFormattedBinary(data);
-            if (content === undefined) return;
-            switch (key) {
-                case 'mqtt.OrderResp':
-                    const { uuid, data: { method, params } } = OrderResp.toObject(OrderResp.decode(new Uint8Array(content)))
+            const { fnCode, payload } = getBufferFromFormattedBinary(data);
+            if (payload === undefined) return;
+            switch (fnCode) {
+                case FunType.ORDERRESP:
+                    const { uuid, data: { method, params = [] } } = OrderResp.toObject(OrderResp.decode(new Uint8Array(payload)))
 
                     console.log('orderResp', data, method, params, uuid)
 
                     switch (method) {
-                        case 'reset':
-                            console.log('reset', params); break;
+                        case InstructType.RESET: actions.refresh(); break
+                        case InstructType.SETSCREEN:
+                            params[0] && actions.pageChange(params[0]); break;
+                        case InstructType.SETTEXT:
+                        case InstructType.SETICON:
+                        case InstructType.SETCOLOR:
+                            params[1] && actions.pageSettingChange(method, params[1]); break;
                         default: console.log('.................');
                     }
-                    // if (uuid) {
-                    //     timer = setInterval(() => {
-                    //         ws.send(getFormattedBinaryFromBuffer('mqtt.Heartbeat', Heartbeat.encode(Heartbeat.create({})).finish()))
-                    //     }, 60000)
-                    //     connectState.state !== 0 && message.destroy()
-                    //     connectState = InitialConnectState
-                    // }
                     break;
-                case 'mqtt.Heartbeat':
+                case FunType.HEARTBEAT:
                     actions.pageChange()
                     timer = setInterval(() => {
-                        ws.send(getFormattedBinaryFromBuffer('mqtt.Heartbeat', Heartbeat.encode(Heartbeat.create({})).finish()))
+                        ws.send(getFormattedBinaryFromBuffer(FunType.HEARTBEAT, Heartbeat.encode(Heartbeat.create({})).finish()))
                     }, 60000)
-                    connectState.state !== 0 && message.destroy()
-                    connectState = InitialConnectState
+                    // connectState.state !== 0 && message.destroy()
+                    // connectState = InitialConnectState
                     console.log('Heartbeat')
                     break;
                 default:
@@ -174,7 +184,7 @@ export async function WebSocketManager(actions: Actions) {
  * @param data 原始二进制数据
  * @returns 格式化校验的Buffer
  */
-function getFormattedBinaryFromBuffer(key: string, data: Uint8Array) {
+/* function getFormattedBinaryFromBuffer(key: string, data: Uint8Array) {
     const nameLen = key.length;
     const dataLen = data.length;
     const fontArea = new ArrayBuffer(5);
@@ -191,12 +201,12 @@ function getFormattedBinaryFromBuffer(key: string, data: Uint8Array) {
     verifyAreaDataView.setUint32(0, alder32.buf(verifyFields));
     const buffers = concatArrayBuffer(verifyFields, new Uint8Array(verifyArea));
     return buffers.buffer;
-}
+} */
 /**
  *
  * @param data 服务器返回的、格式化校验的二进制数据
  */
-function getBufferFromFormattedBinary(data: ArrayBuffer) {
+/* function getBufferFromFormattedBinary(data: ArrayBuffer) {
     const len = data.byteLength;
     const dataview = new DataView(data);
     // const totalLen = dataview.getUint16(0)
@@ -213,6 +223,53 @@ function getBufferFromFormattedBinary(data: ArrayBuffer) {
     return {
         key,
         content,
+    };
+}
+ */
+
+
+/**
+ *
+ * @param key 字段名, 如 Heartbeat
+ * @param data 原始二进制数据
+ * @returns 格式化校验的Buffer
+ */
+function getFormattedBinaryFromBuffer(code: FunType, data: Uint8Array) {
+    const dataLen = data.length;
+    const fontArea = new ArrayBuffer(6);
+    const fontAreaDataView = new DataView(fontArea);
+    fontAreaDataView.setUint16(0, 0x6d37);
+    fontAreaDataView.setUint8(2, 0x00);
+    fontAreaDataView.setUint8(3, Number(code));
+    fontAreaDataView.setUint16(4, dataLen);
+    const verifyFields = concatArrayBuffer(
+        new Uint8Array(fontArea),
+        data,
+    );
+    const hexString = Array.from(verifyFields).map(b => b.toString(16).padStart(2, '0')).join('');
+    const crc = calculateCRC16Modbus(hexString)
+    const arr = [`0x${crc.slice(0, 2)}`, `0x${crc.slice(2, 4)}`].map(a => Number(a))
+    const buffers = concatArrayBuffer(verifyFields, new Uint8Array(arr));
+
+    return buffers.buffer;
+}
+
+/**
+ *
+ * @param data 服务器返回的、格式化校验的二进制数据
+ */
+function getBufferFromFormattedBinary(data: ArrayBuffer) {
+    const len = data.byteLength;
+    // const dataview = new DataView(data);
+    // const alder32Code = dataview.getUint32(len - 1);
+    const keyArr = data.slice(3, 4);
+    const payload = data.slice(6, len - 2);
+    const fnCode = buffer2string(keyArr);
+    // @ts-ignore
+
+    return {
+        fnCode,
+        payload,
     };
 }
 
@@ -237,4 +294,28 @@ function concatArrayBuffer(...typedArrays: Uint8Array[]) {
         offset += typedArray.length;
     }
     return result;
+}
+
+function calculateCRC16Modbus(dataHexString: string) {
+    const dataBytes = [];
+    for (let i = 0; i < dataHexString.length; i += 2) {
+        dataBytes.push(parseInt(dataHexString.substr(i, 2), 16));
+    }
+
+    let crc = 0xFFFF;
+    const polynomial = 0xA001;  // This is the polynomial x^16 + x^15 + x^2 + 1
+
+    for (const byte of dataBytes) {
+        // eslint-disable-next-line no-bitwise
+        crc ^= byte;
+        for (let i = 0; i < 8; i++) {
+            if (crc & 0x0001) {
+                crc = ((crc >> 1) ^ polynomial) & 0xFFFF;
+            } else {
+                crc >>= 1;
+            }
+        }
+    }
+
+    return crc.toString(16)
 }
