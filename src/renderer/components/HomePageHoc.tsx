@@ -1,5 +1,6 @@
 import { useMemo } from "react"
 import { Card } from "antd"
+import { CSSTransition } from 'react-transition-group'
 import useWebsocket from "../useWebsocket"
 import WarningPage from "./Warning"
 import HistoryListPage from "./HistoryList"
@@ -17,5 +18,15 @@ export default function HomeContent() {
         }
     }, [pageState, pageSetting])
 
-    return <Card className="content-container">{content}</Card>
+    return <Card className="content-container">
+        <CSSTransition
+            in={Boolean(pageState)}
+            classNames='home'
+            appear
+            timeout={1000}
+            // unmountOnExit
+        >
+            {content}
+        </CSSTransition>
+    </Card >
 }

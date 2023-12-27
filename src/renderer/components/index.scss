@@ -2,6 +2,27 @@
     height: 100%;
     width: 100%;
 
+    .home-appear,
+    .home-enter {
+        opacity: 0;
+    }
+
+    .home-appear-active,
+    .home-enter-active {
+        opacity: 1;
+        transition: opacity 1s ease;
+    }
+
+    /* 离开动画 */
+    .home-exit {
+        opacity: 1;
+    }
+
+    .home-exit-active {
+        opacity: 0;
+        transition: opacity 1s ease;
+    }
+
     .countdown-container {
         width: 100%;
         height: 100%;

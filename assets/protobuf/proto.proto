@@ -8,7 +8,7 @@ message Heartbeat {
 message Order {
     string uuid = 1;//请求id
     string service = 2;//约定的service名称(每个可控设备抽象为一个service)
-    string data = 3;//命令数据, jsonRpc 调用
+    string data = 4;//命令数据, jsonRpc 调用
 }
 
 //3 通用命令响应

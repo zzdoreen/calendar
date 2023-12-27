@@ -29,7 +29,6 @@ const InitialConnectState = {
     state: 0, // 断连类型，0正常，1重连中，2网络断开
 };
 const WS_URL = 'ws://127.0.0.1:8086/masterpiece';
-// const WS_URL = 'ws://8.140.175.191:5016/v1/ws';
 interface Actions {
     pageChange: (name?: PageType) => void;
     syncData: () => void;
@@ -38,9 +37,9 @@ interface Actions {
 }
 
 enum FunType {
-    HEARTBEAT = '1',
-    ORDER = '2',
-    ORDERRESP = '3'
+    HEARTBEAT = 1,
+    ORDER = 2,
+    ORDERRESP = 3
 }
 
 export enum InstructType {
@@ -71,31 +70,47 @@ export async function WebSocketManager(actions: Actions) {
             // 'private'
         );
         ws.binaryType = 'arraybuffer';
+
         ws.onopen = (e) => {
             console.log(`websocket连接启动${WS_URL}`, e);
-
+            // cmd: wmic csproduct get uuid
+            // linux: sudo blkid
             const account = {
-                // cmd: wmic csproduct get uuid
-                // linux: sudo blkid
                 uuid: 'BD31E74A-8DD3-11EA-BCDA-1889A8506500',
                 service: 'mpdeamon',
                 data: JSON.stringify({
                     method: "authorized",
                     id: "104567",
                     params: ["1", "1.0.0", "UI", 0],
-                    // jsonrpc: "2.0",
+                    jsonrpc: "2.0",
                 })
             }
             const data = Order.encode(Order.create({ ...account })).finish();
             ws.send(getFormattedBinaryFromBuffer(FunType.ORDER, data))
+            console.log('%c order send', 'color:green', data,)
 
-            // console.log('send---', data, getFormattedBinaryFromBuffer(FunType.ORDER, data))
+            setTimeout(() => {
+                ws.send(getFormattedBinaryFromBuffer(FunType.HEARTBEAT, Heartbeat.encode(Heartbeat.create({})).finish()))
+                console.log('%c heartbeat send', 'color:red')
+            }, 5000);
         };
         ws.onmessage = ({ data }) => {
-            console.log('onmessage', data)
             const { fnCode, payload } = getBufferFromFormattedBinary(data);
+
+            console.log('onmessage',
+                fnCode,
+                payload,
+                OrderResp.toObject(OrderResp.decode(new Uint8Array(payload))),
+                Order.toObject(Order.decode(new Uint8Array(payload))),
+                Heartbeat.toObject(Heartbeat.decode(new Uint8Array(payload))),
+            )
+
             if (payload === undefined) return;
             switch (fnCode) {
+                case FunType.ORDER:
+                    const { data } = Order.toObject(Order.decode(new Uint8Array(payload)))
+                    console.log('order', data);
+                    break;
                 case FunType.ORDERRESP:
                     const { uuid, data: { method, params = [] } } = OrderResp.toObject(OrderResp.decode(new Uint8Array(payload)))
 
@@ -129,7 +144,7 @@ export async function WebSocketManager(actions: Actions) {
         ws.onclose = () => {
             clearInterval(timer);
             console.log('websocket连接已关闭');
-            startWS()
+            // startWS()
             // reconnect();
         };
         ws.onerror = () => {
@@ -242,7 +257,7 @@ function getFormattedBinaryFromBuffer(code: FunType, data: Uint8Array) {
     const fontAreaDataView = new DataView(fontArea);
     fontAreaDataView.setUint16(0, 0x6d37);
     fontAreaDataView.setUint8(2, 0x00);
-    fontAreaDataView.setUint8(3, Number(code));
+    fontAreaDataView.setUint8(3, code);
     fontAreaDataView.setUint16(4, dataLen);
     const verifyFields = concatArrayBuffer(
         new Uint8Array(fontArea),
@@ -266,7 +281,7 @@ function getBufferFromFormattedBinary(data: ArrayBuffer) {
     // const alder32Code = dataview.getUint32(len - 1);
     const keyArr = data.slice(3, 4);
     const payload = data.slice(6, len - 2);
-    const fnCode = buffer2string(keyArr);
+    const fnCode = buffer2string(keyArr)?.charCodeAt(0);
     // @ts-ignore
 
     return {
@@ -311,13 +326,11 @@ function calculateCRC16Modbus(dataHexString: string) {
         // eslint-disable-next-line no-bitwise
         crc ^= byte;
         for (let i = 0; i < 8; i++) {
-            if (crc & 0x0001) {
+            if (crc & 0x0001)
                 crc = ((crc >> 1) ^ polynomial) & 0xFFFF;
-            } else {
+            else
                 crc >>= 1;
-            }
         }
     }
-
     return crc.toString(16)
 }
