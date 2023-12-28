@@ -51,16 +51,22 @@
         top: 0;
         background: #FF7500;
         color: white;
-        font-size: 2rem;
+        font-size: 4rem;
 
         .intensity-content {
             height: calc(60% - 3rem);
             padding: 3rem;
-            line-height: 5rem;
+            line-height: 10rem;
             position: relative;
+            font-size: 5rem;
 
-            &::after {
-                content: '';
+            .distance {
+                padding-top: 10px;
+                margin-top: 2rem;
+                font-size: 3.5rem;
+            }
+
+            .arrived {
                 position: absolute;
                 width: 65%;
                 height: 100%;
@@ -77,6 +83,24 @@
                         transparent 61%, transparent 70%,
                         #FF7707 71%, #FF7707 80%,
                         transparent 81%, transparent 100%);
+            }
+
+            .countdown {
+                position: absolute;
+                width: 65%;
+                height: 100%;
+                right: -10%;
+                top: 0;
+                text-align: center;
+                font-size: 20rem;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                .unit {
+                    font-size: 4rem;
+                    margin: 100px;
+                }
             }
         }
 
@@ -102,7 +126,15 @@
                 flex: 1;
                 text-align: center;
                 border-left: 1px solid #FE9C3B;
-                line-height: 5rem;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                line-height: 9rem;
+
+                .title {
+                    font-size: 3rem;
+                }
             }
         }
     }

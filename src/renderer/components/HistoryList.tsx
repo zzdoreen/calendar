@@ -1,5 +1,6 @@
 import { Table } from "antd";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function HistoryListPage({ setting }: any) {
     const columns = [
         {

@@ -4,7 +4,7 @@ import { CSSTransition } from 'react-transition-group'
 import useWebsocket from "../useWebsocket"
 import WarningPage from "./Warning"
 import HistoryListPage from "./HistoryList"
-import DetailPage from "./Detail"
+// import DetailPage from "./Detail"
 
 export default function HomeContent() {
     const { pageState, pageSetting } = useWebsocket()
@@ -13,7 +13,7 @@ export default function HomeContent() {
         switch (pageState) {
             case 'warning': return <WarningPage setting={pageSetting} />;
             case 'history': return <HistoryListPage setting={pageSetting} />;
-            case 'alert': return <DetailPage setting={pageSetting} />;
+            // case 'alert': return <DetailPage setting={pageSetting} />;
             default: return <HistoryListPage setting={pageSetting} />
         }
     }, [pageState, pageSetting])
@@ -24,7 +24,6 @@ export default function HomeContent() {
             classNames='home'
             appear
             timeout={1000}
-            // unmountOnExit
         >
             {content}
         </CSSTransition>
