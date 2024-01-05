@@ -8,26 +8,18 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-use-before-define */
 // @ts-ignore
-import { message } from 'antd';
+// import { message } from 'antd';
 import { getProto } from '.';
 import { PageType } from '../useWebsocket';
 
-export enum Disaster { // 灾害类型
-    FIRE = 1,
-    LANDSLIDE,
-    MUDSLIDE,
-    SUBSIDENCE,
-    INTENSITY,
-    FLASHFLOOD,
-    WATERACCUM
-}
-
-const { setTimeout, setInterval, clearInterval, clearTimeout } = window;
-const InitialConnectState = {
+const { setTimeout, setInterval, clearInterval,
+    // clearTimeout
+} = window;
+/* const InitialConnectState = {
     timer: undefined as any as number, // 重连定时器
     count: 0, // 重连次数
     state: 0, // 断连类型，0正常，1重连中，2网络断开
-};
+}; */
 const WS_URL = 'ws://127.0.0.1:8086/masterpiece';
 interface Actions {
     pageChange: (name?: PageType) => void;
@@ -60,8 +52,8 @@ export async function WebSocketManager(actions: Actions) {
         OrderResp,
         Heartbeat,
     } = await getProto();
-    let connectState = InitialConnectState;
-    let NO_RECONNECT = false;
+    // let connectState = InitialConnectState;
+    // let NO_RECONNECT = false;
     let timer: number;
     let ws: WebSocket;
     function startWS() {
@@ -112,7 +104,9 @@ export async function WebSocketManager(actions: Actions) {
                     console.log('order', data);
                     break;
                 case FunType.ORDERRESP:
-                    const { uuid, data: { method, params = [] } } = OrderResp.toObject(OrderResp.decode(new Uint8Array(payload)))
+                    const { uuid, data: { method, params } } = OrderResp.toObject(OrderResp.decode(new Uint8Array(payload)))
+
+                    // const { method, params } = JSON.parse(data) || {}
 
                     console.log('orderResp', data, method, params, uuid)
 
@@ -160,37 +154,37 @@ export async function WebSocketManager(actions: Actions) {
     /**
      * 重连机制：间隔2^n秒重连,最大60秒;根据网络状态区分显示提示
      */
-    function reconnect() {
-        if (NO_RECONNECT) return;
-        let { timer, count, state } = connectState;
-        clearTimeout(timer);
-        if (count > 4) {
-            if (!navigator.onLine && state !== 2) {
-                state === 1 && message.destroy();
-                message.error('连接已断开，请检查网络连接！', 0);
-                state = 2;
-            } else if (state !== 1) {
-                state === 2 && message.destroy();
-                // @ts-ignore
-                message.error('连接已断开，正在尝试重连...', 0);
-                state = 1;
+    /*     function reconnect() {
+            if (NO_RECONNECT) return;
+            let { timer, count, state } = connectState;
+            clearTimeout(timer);
+            if (count > 4) {
+                if (!navigator.onLine && state !== 2) {
+                    state === 1 && message.destroy();
+                    message.error('连接已断开，请检查网络连接！', 0);
+                    state = 2;
+                } else if (state !== 1) {
+                    state === 2 && message.destroy();
+                    // @ts-ignore
+                    message.error('连接已断开，正在尝试重连...', 0);
+                    state = 1;
+                }
             }
-        }
-        timer = setTimeout(
-            () => {
-                console.log(`正在尝试第${connectState.count}次重连...`);
-                startWS();
-            },
-            Math.min(60, 2 ** count++) * 1000,
-        );
-        connectState = { timer, count, state };
-    }
+            timer = setTimeout(
+                () => {
+                    console.log(`正在尝试第${connectState.count}次重连...`);
+                    startWS();
+                },
+                Math.min(60, 2 ** count++) * 1000,
+            );
+            connectState = { timer, count, state };
+        } */
     startWS();
     return () => {
         clearInterval(timer);
-        clearTimeout(connectState.timer);
-        connectState.state !== 0 && message.destroy();
-        NO_RECONNECT = true;
+        // clearTimeout(connectState.timer);
+        // connectState.state !== 0 && message.destroy();
+        // NO_RECONNECT = true;
         ws.close();
     };
 }

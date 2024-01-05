@@ -5,16 +5,19 @@ import { useEffect, useMemo, useState } from "react";
 import { playVoice, playVoiceTasks } from "../utils/tools";
 
 export default function WarningPage({ setting }: any) {
-    const { setColor = 'rgb(255,117,0)', setText = '四川省成都市高新区' } = setting || {}
-    const [countdown, setCountdown] = useState<number>(20)
+    const {
+        // setColor = 'rgb(255,117,0)',
+        setColor = 'rgb(0,0,0)',
+        setText = '四川省成都市高新区' } = setting || {}
+    const [countdown, setCountdown] = useState<number>(-1)
 
     useEffect(() => {
         let timer: NodeJS.Timeout | null = null
         if (countdown === 20) playVoice(require(`../../../assets/audio/notifys/dingdong.mp3`))
-        if (countdown)
+        if (countdown >= 0)
             timer = setInterval(() => {
                 const count = countdown - 1
-                playVoiceTasks(count, 3)
+                count > -1 && playVoiceTasks(count, 3)
                 setCountdown(count)
             }, 1000)
 
@@ -23,7 +26,7 @@ export default function WarningPage({ setting }: any) {
         }
     }, [countdown])
 
-    const isArrived = useMemo(() => countdown === 0, [countdown])
+    const isArrived = useMemo(() => countdown === -1, [countdown])
 
     const { gradientColor, borderColor } = useMemo(() => {
         // eslint-disable-next-line @typescript-eslint/no-shadow

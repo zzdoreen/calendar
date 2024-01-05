@@ -14,11 +14,7 @@ export async function getProto() {
     if (proto) return proto
 
     return protobuf.load(file).then(() => {
-        const {
-            Order,
-            OrderResp,
-            Heartbeat
-        } = file || {}
+        const { Order, OrderResp, Heartbeat } = file || {}
 
         // eslint-disable-next-line no-return-assign
         return proto = {

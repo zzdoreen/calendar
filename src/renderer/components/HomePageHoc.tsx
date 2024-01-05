@@ -14,7 +14,7 @@ export default function HomeContent() {
             case 'warning': return <WarningPage setting={pageSetting} />;
             case 'history': return <HistoryListPage setting={pageSetting} />;
             // case 'alert': return <DetailPage setting={pageSetting} />;
-            default: return <HistoryListPage setting={pageSetting} />
+            default: return <WarningPage setting={pageSetting} />
         }
     }, [pageState, pageSetting])
 

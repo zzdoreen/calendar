@@ -73,8 +73,10 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 1920,
+    height: 1080,
+    // width: 1080,
+    // height: 1920,
     icon: getAssetPath('icon.png'),
     fullscreen: isProduction,
     title: '-',
