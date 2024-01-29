@@ -1,141 +1,110 @@
-.content-container {
-    height: 100%;
-    width: 100%;
+.calendar-container {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
 
-    .home-appear,
-    .home-enter {
-        opacity: 0;
-    }
+.countdown-container {
+    width: 100vw;
+    max-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 20px;
 
-    .home-appear-active,
-    .home-enter-active {
-        opacity: 1;
-        transition: opacity 1s ease;
-    }
+    .ant-card {
+        margin-bottom: 20px;
+        position: relative;
+        height: calc(50vh - 60px);
 
-    /* 离开动画 */
-    .home-exit {
-        opacity: 1;
-    }
-
-    .home-exit-active {
-        opacity: 0;
-        transition: opacity 1s ease;
-    }
-
-    .countdown-container {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        position: fixed;
-        left: 0;
-        top: 0;
-        background-color: rebeccapurple;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        color: white;
-
-        .count {
-            font-size: 20rem;
+        &::after {
+            display: block;
+            position: absolute;
+            width: 100px;
+            height: 30px;
+            top: 0;
+            left: 0;
+            line-height: 30px;
+            text-align: center;
+            color: white;
+            border-radius: 15px;
+            transform: rotate(325deg) translateX(-20px) translateY(-10px);
         }
-    }
 
-    .detail-container {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        position: fixed;
-        flex-direction: column;
-        left: 0;
-        top: 0;
-        background: #FF7500;
-        color: white;
-        font-size: 4rem;
-
-        .intensity-content {
-            height: calc(60% - 3rem);
-            padding: 3rem;
-            line-height: 10rem;
-            position: relative;
-            font-size: 5rem;
-
-            .distance {
-                padding-top: 10px;
-                margin-top: 2rem;
-                font-size: 3.5rem;
+        &:nth-of-type(1) {
+            &::after {
+                content: '倒数日';
+                background: linear-gradient(-225deg, #7085B6 0%, #87A7D9 50%, #DEF3F8 100%);
             }
+        }
 
-            .arrived {
-                position: absolute;
-                width: 65%;
-                height: 100%;
-                right: -10%;
-                top: 0;
-                z-index: -1;
-                background: radial-gradient(circle at center,
-                        transparent 0, transparent 10%,
-                        #FF9348 11%, #FF9348 20%,
-                        transparent 21%, transparent 30%,
-                        #FF8528 31%, #FF8528 40%,
-                        transparent 41%, transparent 50%,
-                        #FE7A0D 51%, #FE7A0D 60%,
-                        transparent 61%, transparent 70%,
-                        #FF7707 71%, #FF7707 80%,
-                        transparent 81%, transparent 100%);
+        &:nth-of-type(2) {
+            &::after {
+                content: '正数日';
+                background-image: linear-gradient(-225deg, #2CD8D5 0%, #C5C1FF 56%, #FFBAC3 100%);
+            }
+        }
+
+        .ant-card-body {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            overflow-y: auto;
+            height: 100%;
+
+            &::-webkit-scrollbar {
+                width: 0px;
+            }
+        }
+
+        .countdown-box {
+            height: 200px;
+            min-width: 200px;
+            flex: 1;
+            background: linear-gradient(to bottom left, #74ebd5, #acb6e5);
+            text-align: center;
+            border-radius: 15px;
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            margin: 20px;
+
+            p {
+                margin: 0;
+
+                &.name {
+                    margin-top: 20px;
+                }
             }
 
             .countdown {
-                position: absolute;
-                width: 65%;
-                height: 100%;
-                right: -10%;
-                top: 0;
-                text-align: center;
-                font-size: 20rem;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-
-                .unit {
-                    font-size: 4rem;
-                    margin: 100px;
+                strong {
+                    font-size: 60px;
                 }
             }
-        }
 
-        .intensity-info {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            height: 40%;
-            position: relative;
-
-            &::after {
-                content: '';
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                background: rgba($color: #fff, $alpha: .06);
-                left: 0;
-                top: 0
+            &.default {
+                color: #ada996;
+                background: linear-gradient(to bottom left, #ada996, #f2f2f2, #dbdbdb, #eaeaea);
             }
 
-            .item {
-                height: 70%;
-                flex: 1;
-                text-align: center;
-                border-left: 1px solid #FE9C3B;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                line-height: 9rem;
-
-                .title {
-                    font-size: 3rem;
-                }
+            &.success {
+                background: linear-gradient(to top right, #00b09b, #96c93d);
             }
+
+            &.warning {
+                background: linear-gradient(to top right, #eacda3, #d6ae7b)
+            }
+
+            &.error {
+                background: linear-gradient(to bottom right, #ffafbd, #ffc3a0)
+            }
+
+
         }
     }
+
+
+
+
 }

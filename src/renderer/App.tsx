@@ -1,20 +1,16 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import HomeContent from './components/HomePageHoc';
-// import { commonRequest } from './services';
+import { ConfigProvider } from 'antd';
+import zhCN from "antd/locale/zh_CN";
+import Home from './components/HomePageHoc';
 
 export default function App() {
-  // useEffect(() => {
-  //   commonRequest('/v1/disasters/realtime', { hours: 0 })
-  //     .then(res => console.log(res))
-  //     .catch(e => { console.log('cath', e) })
-  // }, [])
 
-  return (
+  return <ConfigProvider locale={zhCN}>
     <Router>
       <Routes>
-        <Route path="/" element={<HomeContent />} />
+        <Route path="/" element={<Home />} />
       </Routes>
     </Router>
-  );
+  </ConfigProvider>
 }

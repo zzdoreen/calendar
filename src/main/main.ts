@@ -73,13 +73,11 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1920,
-    height: 1080,
-    // width: 1080,
-    // height: 1920,
+    width: 900,
+    height: 900,
     icon: getAssetPath('icon.png'),
     fullscreen: isProduction,
-    title: '-',
+    title: "zz's calendar",
     alwaysOnTop: true,
     autoHideMenuBar: isProduction,
     webPreferences: {

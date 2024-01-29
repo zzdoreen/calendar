@@ -1,31 +1,19 @@
-import { useMemo } from "react"
-import { Card } from "antd"
-import { CSSTransition } from 'react-transition-group'
-import useWebsocket from "../useWebsocket"
-import WarningPage from "./Warning"
-import HistoryListPage from "./HistoryList"
-// import DetailPage from "./Detail"
+import { Tabs } from "antd";
+import { useState } from "react";
+import CalendarComponent from "./Calendar";
+import Countdown from "./Countdown";
 
-export default function HomeContent() {
-    const { pageState, pageSetting } = useWebsocket()
-
-    const content = useMemo(() => {
-        switch (pageState) {
-            case 'warning': return <WarningPage setting={pageSetting} />;
-            case 'history': return <HistoryListPage setting={pageSetting} />;
-            // case 'alert': return <DetailPage setting={pageSetting} />;
-            default: return <WarningPage setting={pageSetting} />
-        }
-    }, [pageState, pageSetting])
-
-    return <Card className="content-container">
-        <CSSTransition
-            in={Boolean(pageState)}
-            classNames='home'
-            appear
-            timeout={1000}
-        >
-            {content}
-        </CSSTransition>
-    </Card >
+export default function Home() {
+    const [tab, setTab] = useState<'calendar' | 'countdown'>('countdown')
+    // @ts-ignore
+    return <Tabs type="card" onChange={setTab} defaultValue={tab}
+        items={['calendar', 'countdown'].map((_) => {
+            const isCalendar = _ === 'calendar'
+            return {
+                key: _,
+                label: isCalendar ? '日历' : '重要日',
+                children: isCalendar ? <CalendarComponent /> : <Countdown />
+            }
+        })}
+    />
 }
